@@ -12763,36 +12763,46 @@ You may also use a decaying function for $\alpha$ (the learning rate) if you so 
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p><strong>Answer:</strong> 
-Let us consider a scenario where the 'waypoint' is forward (i.e.- direction to the destination), and there is no oncoming traffic. Then, according to me, the optimal policy can be described as follows:</p>
-
-<pre><code>          State                          Actions   Policy
-         {'forward', 'red', None, None}  None     optimal
-         {'forward', 'red', None, None}  forward   incorrect
-         {'forward', 'red', None, None}  left      incorrect
-         {'forward', 'red', None, None}  right     suboptimal
-
-</code></pre>
+According to me, the optimal policy can be described as follows:</p>
+<ul>
+<li>When the light is green, move towards the waypoint unless there is a chance of collision:<ul>
+<li>turning 'left', when oncoming traffic is moving forward/right (collision will happen). In such a case, since idling at green is penalised, the optimal action would be to move forward.</li>
+</ul>
+</li>
+<li>When the light is red, do no action unless:<ul>
+<li>waypoint is 'right', in which case, move right only if there are no chances of collision (left vehicle moving forward). In this case, the optimal policy would be to perform no action, since idling at red is allowed.</li>
+</ul>
+</li>
+</ul>
 <p>The state here is defined as a function of ('waypoint', 'light', 'left', 'oncoming').<br>
-Looking at the logs for the optimized Q-learner, For the above conditions, the following rewards were logged:</p>
-<p>('forward', 'red', None, None)
--- None : 1.29
--- forward : -5.10
--- right : 0.24
--- left : -4.34</p>
-<p>This is inline with the optimal policy, as the reward for 'None' is the highest. This is the result of the reinforced learning. The Q-learner has also learned a suboptimal policy, 'right', which has a lesser value of 0.24 than the optimal one ('None'- 1.29) which also matches that of the correct action for the suboptimal policy.</p>
+Here are a few examples of optimal policy:</p>
+<p>('right', 'green', 'left', None)
+ -- None : -0.15
+ -- forward : 0.10
+ <strong>-- right : 0.22</strong>
+ -- left : 0.06</p>
+<p>This is the smartcab following the optimal policy, since there are no chances of collision.</p>
+<p>Another example</p>
+<p>('right', 'red', 'left', 'forward')
+ -- None : 0.01
+ -- forward : -0.60
+ <strong>-- right : 0.06</strong>
+ -- left : -0.09</p>
+<p>In this case, since right is free as per US laws, the correct action to take is right, since there are no chances of collision.</p>
+<p>This is the result of the reinforced learning. In the dirst case, The Q-learner has also learned a suboptimal policy, 'forward', which has a lesser value of 0.10 than the optimal one ('right'- 0.22) which also matches that of the correct action for the suboptimal policy.</p>
 <p>Some examples that I found for suboptimal policies:</p>
-<p>('right', 'red', None, 'left')
--- None : 0.14
--- forward : -1.07
--- right : 0.42
--- left : -1.60</p>
-<p>In this case, doing no action was the optimal policy for the agent since the light was red &amp; there was oncoming traffic going left, which could have resulted in an accident as well. This is a traffic violation. The optimal policy here would be to not move the agent, but right is incentivized even thought the the light is red.</p>
+<p>('right', 'green', 'right', 'right')
+ -- None : -0.05
+ <strong>-- forward : 0.01</strong>
+ -- right : 0.00
+ -- left : -0.21</p>
+<p>In this case, moving right was the optimal policy for the agent since the light was green &amp; there was no chance of collision. This reduces the reliability of the smartcab. This probably also explains why the reliability rating might have tended towards A instead of A+.</p>
 <p>('left', 'red', None, 'forward')
 -- None : 0.12
 -- forward : -1.95
--- right : 0.24
+<strong>-- right : 0.24</strong>
 -- left : -0.80</p>
-<p>In this case, right is given a higher reward even though it is a traffic violation that might cause an accident. The 'None' action should have been incentivized more here since the light is red &amp; there is oncoming traffic.</p>
+<p>In this case, right is given the highest reward, but it is a suboptimal policy where the agent is moving away from the waypoint. The optimal policy here would be to not move the agent &amp; wait for the light to turn green &amp; oncoming traffic to not move forward/right (else an accident can occur).</p>
 
 </div>
 </div>
